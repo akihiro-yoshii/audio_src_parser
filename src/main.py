@@ -28,7 +28,9 @@ class Sequence(nn.Module):
         outputs = torch.stack(outputs, 2)
         return outputs
 
-if __name__ == '__main__':
+
+
+def main():
     # set random seed to 0
     np.random.seed(0)
     torch.manual_seed(0)
@@ -71,3 +73,7 @@ if __name__ == '__main__':
             print(y.shape)
             save_wav(y[0][0], './data/pred{}_0.wav'.format(i))
             save_wav(y[0][1], './data/pred{}_1.wav'.format(i))
+
+
+if __name__ == '__main__':
+    main()
