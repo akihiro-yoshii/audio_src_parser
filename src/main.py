@@ -8,6 +8,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from audio_util import get_mix_audio, save_wav, get_frames, print_wave_info
+import argparse
 
 class Sequence(nn.Module):
     def __init__(self):
@@ -19,7 +20,6 @@ class Sequence(nn.Module):
         outputs = []
         h_t = torch.zeros(input.size(0), 51)
         c_t = torch.zeros(input.size(0), 51)
-        print(input.shape)
 
         for i, input_t in enumerate(input.chunk(input.size(1), dim=1)):
             h_t, c_t = self.lstm1(input_t, (h_t, c_t))
@@ -28,9 +28,18 @@ class Sequence(nn.Module):
         outputs = torch.stack(outputs, 2)
         return outputs
 
-
+def get_arguments():
+    parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
+    parser.add_argument('--steps', type=int, default=15, metavar='N',
+                        help='number of steps to train (default: 15)')
+    parser.add_argument('--cycles', type=int, default=20, metavar='N',
+                        help='number of cycles for LBFGS optimizer (default: 20)')
+    return parser.parse_args()
 
 def main():
+
+    args = get_arguments()
+
     # set random seed to 0
     np.random.seed(0)
     torch.manual_seed(0)
@@ -49,11 +58,10 @@ def main():
     seq.float()
     criterion = nn.MSELoss()
     # use LBFGS as optimizer since we can load the whole data to train
-    # optimizer = optim.LBFGS(seq.parameters(), lr=0.8, max_iter=1)
-    optimizer = optim.LBFGS(seq.parameters(), lr=0.8)
+    optimizer = optim.LBFGS(seq.parameters(), lr=0.8, max_iter=args.cycles)
     #begin to train
-    for i in range(15):
-        print('STEP: ', i)
+    for i in range(args.steps):
+        print('==== STEP{} ===='.format(i))
         def closure():
             optimizer.zero_grad()
             out = seq(input)
@@ -65,14 +73,15 @@ def main():
 
         # begin to predict, no need to track gradient here
         with torch.no_grad():
+            print('[TEST]')
             pred = seq(test_input)
             loss = criterion(pred, test_target)
             print('test loss:', loss.item())
             y = (pred.detach().numpy() * 65536).astype('int16')
 
-            print(y.shape)
             save_wav(y[0][0], './data/pred{}_0.wav'.format(i))
             save_wav(y[0][1], './data/pred{}_1.wav'.format(i))
+            print()
 
 
 if __name__ == '__main__':
