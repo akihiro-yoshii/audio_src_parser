@@ -29,16 +29,32 @@ class Sequence(nn.Module):
         return outputs
 
 def get_arguments():
-    parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
+    parser = argparse.ArgumentParser(description='Audio parser')
+    parser.add_argument('--recipe', type=str, required=True,
+                        help='name of recipe file')
     parser.add_argument('--steps', type=int, default=15, metavar='N',
                         help='number of steps to train (default: 15)')
     parser.add_argument('--cycles', type=int, default=20, metavar='N',
                         help='number of cycles for LBFGS optimizer (default: 20)')
     return parser.parse_args()
 
+def list_audio(recipe_path):
+    with open(recipe_path, 'r') as f:
+        strings = f.readlines()
+
+    string = strings[0].rstrip()
+    columns = string.split(' ')
+
+    path1 = columns[0] + columns[1]
+    path2 = columns[0] + columns[2]
+    return path1, path2
+
+
 def main():
 
     args = get_arguments()
+
+    path1, path2 = list_audio(args.recipe)
 
     # set random seed to 0
     np.random.seed(0)
@@ -46,7 +62,7 @@ def main():
     # load data and make training set
     # data = torch.load('traindata.pt')
 
-    mixed, wave1, wave2 = get_mix_audio('./data/nsynth-train/audio/guitar_acoustic_022-055-100.wav', './data/nsynth-train/audio/flute_acoustic_027-075-100.wav')
+    mixed, wave1, wave2 = get_mix_audio(path1, path2)
     input = torch.from_numpy(np.expand_dims(mixed / 65536, axis=0)).float()
     target = torch.from_numpy(np.expand_dims(np.stack((wave1 / 65536, wave2 / 65536)), axis=0)).float()
     # target = torch.from_numpy(data[3:, 1:])
