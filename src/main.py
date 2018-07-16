@@ -42,19 +42,25 @@ def list_audio(recipe_path):
     with open(recipe_path, 'r') as f:
         strings = f.readlines()
 
-    string = strings[0].rstrip()
-    columns = string.split(' ')
+    list = []
+    for string in strings:
+        if string.find('#') != 0:
+            columns = string.rstrip().split(' ')
+            path1 = columns[0] + columns[1]
+            path2 = columns[0] + columns[2]
 
-    path1 = columns[0] + columns[1]
-    path2 = columns[0] + columns[2]
-    return path1, path2
+            list.append([path1, path2])
+
+    return list
 
 
 def main():
 
     args = get_arguments()
 
-    path1, path2 = list_audio(args.recipe)
+    # path1, path2 = list_audio(args.recipe)
+    list = list_audio(args.recipe)
+    print(list)
 
     # set random seed to 0
     np.random.seed(0)
@@ -62,7 +68,7 @@ def main():
     # load data and make training set
     # data = torch.load('traindata.pt')
 
-    mixed, wave1, wave2 = get_mix_audio(path1, path2)
+    mixed, wave1, wave2 = get_mix_audio(list[0][0], list[0][1])
     input = torch.from_numpy(np.expand_dims(mixed / 65536, axis=0)).float()
     target = torch.from_numpy(np.expand_dims(np.stack((wave1 / 65536, wave2 / 65536)), axis=0)).float()
     # target = torch.from_numpy(data[3:, 1:])
