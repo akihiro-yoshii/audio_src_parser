@@ -8,12 +8,12 @@ def get_mix_audio(path1, path2):
     wave1_data = get_frames(wave1_file)
     wave2_data = get_frames(wave2_file)
 
-    print("wave1_data")
-    print_wave_info(wave1_file)
-    print(wave1_data)
-    print("wave2_data")
-    print_wave_info(wave2_file)
-    print(wave2_data)
+    # print("wave1_data")
+    # print_wave_info(wave1_file)
+    # print(wave1_data)
+    # print("wave2_data")
+    # print_wave_info(wave2_file)
+    # print(wave2_data)
 
     mix_wave_data = (wave1_data / 2 + wave2_data / 2).astype(np.int16)
     save_wav(mix_wave_data, "./data/mixed.wav")

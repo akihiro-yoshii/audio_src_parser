@@ -60,16 +60,15 @@ def main():
 
     args = get_arguments()
 
-    # path1, path2 = list_audio(args.recipe)
     list = list_audio(args.recipe)
-    print(list)
+    # print(list)
 
     # set random seed to 0
     np.random.seed(0)
     torch.manual_seed(0)
     # load data and make training set
-    # data = torch.load('traindata.pt')
 
+    # data preparation
     mixed_list = np.empty((0, 8000), int)
     wave1_list = np.empty((0, 8000), int)
     wave2_list = np.empty((0, 8000), int)
@@ -79,15 +78,13 @@ def main():
         wave1_list = np.append(wave1_list, np.expand_dims(wave1, axis=0), axis=0)
         wave2_list = np.append(wave2_list, np.expand_dims(wave2, axis=0), axis=0)
 
-    # mixed, wave1, wave2 = get_mix_audio(list[0][0], list[0][1])
-    print(mixed_list.shape)
     input = torch.from_numpy(mixed_list / 65536).float()
-    print(input.shape)
     target = torch.from_numpy(np.stack((wave1_list / 65536, wave2_list / 65536), axis=1)).float()
-    print(target.shape)
-    # target = torch.from_numpy(data[3:, 1:])
-    test_input = torch.from_numpy(np.expand_dims(mixed / 65536, axis=0)).float()
-    test_target = torch.from_numpy(np.expand_dims(np.stack((wave1 / 65536, wave2 / 65536)), axis=0)).float()
+
+    # test_input = torch.from_numpy(np.expand_dims(mixed / 65536, axis=0)).float()
+    # test_target = torch.from_numpy(np.expand_dims(np.stack((wave1 / 65536, wave2 / 65536)), axis=0)).float()
+    test_input = input
+    test_target = target
 
     # build the model
     seq = Sequence()
@@ -108,19 +105,20 @@ def main():
             return loss
         optimizer.step(closure)
         end_time = time.time()
+        print("[Step Info]")
         print("Time: {}".format(end_time - start_time))
 
         # begin to predict, no need to track gradient here
         with torch.no_grad():
-            print('[TEST]')
             pred = seq(test_input)
             loss = criterion(pred, test_target)
             print('test loss:', loss.item())
             y = (pred.detach().numpy() * 65536).astype('int16')
 
-            save_wav(mixed, './out/mixed.wav')
-            save_wav(y[0][0], './out/0.wav')
-            save_wav(y[0][1], './out/1.wav')
+            for i in range(input.size(0)):
+                save_wav(mixed_list[i].astype(np.int16), './out/sample{}_mixed.wav'.format(i))
+                save_wav(y[i][0], './out/sample{}_0.wav'.format(i))
+                save_wav(y[i][1], './out/sample{}_1.wav'.format(i))
             print()
 
 

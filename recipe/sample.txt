@@ -1,3 +1,4 @@
 # Comment line
 ./data/nsynth-train/audio/ bass_electronic_019-030-100.wav flute_acoustic_027-075-100.wav
 ./data/nsynth-train/audio/ guitar_acoustic_022-055-100.wav flute_acoustic_027-075-100.wav
+./data/nsynth-train/audio/ guitar_acoustic_022-055-100.wav flute_acoustic_022-072-100.wav
