@@ -15,13 +15,25 @@ import time
 
 def get_arguments():
     parser = argparse.ArgumentParser(description='Audio parser')
-    parser.add_argument('--recipe', type=str, required=True,
-                        help='name of recipe file')
-    parser.add_argument('--steps', type=int, default=15, metavar='N',
-                        help='number of steps to train (default: 15)')
-    parser.add_argument('--cycles', type=int, default=20, metavar='N',
-                        help='number of cycles for LBFGS optimizer (default: 20)')
-    return parser.parse_args()
+    subparsers = parser.add_subparsers(help='sub command help', title='subcommands')
+
+    train_parser = subparsers.add_parser('train', help='train help')
+    train_parser.add_argument('--recipe', type=str, required=True,
+                              help='name of recipe file')
+    train_parser.add_argument('--steps', type=int, default=15, metavar='N',
+                              help='number of steps to train (default: 15)')
+    train_parser.add_argument('--cycles', type=int, default=20, metavar='N',
+                              help='number of cycles for LBFGS optimizer (default: 20)')
+    train_parser.set_defaults(func=train)
+
+    eval_parser = subparsers.add_parser('eval', help='eval help')
+    eval_parser.add_argument('--recipe', type=str, required=True,
+                              help='name of recipe file')
+    eval_parser.set_defaults(func=eval)
+
+
+    args = parser.parse_args()
+    args.func(args)
 
 def list_audio(recipe_path):
     with open(recipe_path, 'r') as f:
@@ -65,9 +77,7 @@ def recipe2data(recipe_path):
 
     return mixed_list, wave1_list, wave2_list, input, target, test_input, test_target
 
-def eval():
-    args = get_arguments()
-
+def eval(args):
     # set random seed to 0
     np.random.seed(0)
     torch.manual_seed(0)
@@ -75,7 +85,6 @@ def eval():
     mixed_list, wave1_list, wave2_list, input, target, test_input, test_target = recipe2data(args.recipe)
 
     # build the model
-    # seq = Sequence()
     seq = Sequence()
     seq.float()
     criterion = nn.MSELoss()
@@ -101,10 +110,7 @@ def eval():
         print()
 
 
-def main():
-
-    args = get_arguments()
-
+def train(args):
     # set random seed to 0
     np.random.seed(0)
     torch.manual_seed(0)
@@ -156,7 +162,10 @@ def main():
             print()
 
 
+def main():
+    args = get_arguments()
+
 
 if __name__ == '__main__':
-    # main()
-    eval()
+    main()
+    # eval()
