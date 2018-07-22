@@ -1,4 +1,15 @@
 # Comment line
+./data/nsynth-train/audio/ bass_electronic_012-056-100.wav flute_acoustic_022-072-100.wav
+./data/nsynth-train/audio/ bass_electronic_012-056-100.wav flute_acoustic_027-075-100.wav
+./data/nsynth-train/audio/ bass_electronic_012-056-100.wav flute_acoustic_034-071-100.wav
+./data/nsynth-train/audio/ bass_electronic_019-030-100.wav flute_acoustic_022-072-100.wav
 ./data/nsynth-train/audio/ bass_electronic_019-030-100.wav flute_acoustic_027-075-100.wav
-./data/nsynth-train/audio/ guitar_acoustic_022-055-100.wav flute_acoustic_027-075-100.wav
+./data/nsynth-train/audio/ bass_electronic_019-030-100.wav flute_acoustic_034-071-100.wav
 ./data/nsynth-train/audio/ guitar_acoustic_022-055-100.wav flute_acoustic_022-072-100.wav
+./data/nsynth-train/audio/ guitar_acoustic_022-055-100.wav flute_acoustic_027-075-100.wav
+./data/nsynth-train/audio/ guitar_acoustic_022-055-100.wav flute_acoustic_034-071-100.wav
+./data/nsynth-train/audio/ bass_electronic_012-056-100.wav flute_acoustic_022-072-100.wav
+#bass_electronic_012-056-100.wav
+#bass_electronic_016-037-100.wav
+#guitar_acoustic_008-040-100.wav
+#guitar_acoustic_017-085-100.wav

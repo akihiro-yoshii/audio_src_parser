@@ -8,27 +8,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from audio_util import get_mix_audio, save_wav, get_frames, print_wave_info
+from model import Sequence, Sequence2
 import argparse
 
 import time
-
-class Sequence(nn.Module):
-    def __init__(self):
-        super(Sequence, self).__init__()
-        self.lstm1 = nn.LSTMCell(1, 51)
-        self.linear = nn.Linear(51, 2)
-
-    def forward(self, input):
-        outputs = []
-        h_t = torch.zeros(input.size(0), 51)
-        c_t = torch.zeros(input.size(0), 51)
-
-        for i, input_t in enumerate(input.chunk(input.size(1), dim=1)):
-            h_t, c_t = self.lstm1(input_t, (h_t, c_t))
-            output = self.linear(h_t)
-            outputs += [output]
-        outputs = torch.stack(outputs, 2)
-        return outputs
 
 def get_arguments():
     parser = argparse.ArgumentParser(description='Audio parser')
@@ -79,7 +62,7 @@ def main():
         wave2_list = np.append(wave2_list, np.expand_dims(wave2, axis=0), axis=0)
 
     input = torch.from_numpy(mixed_list / 65536).float()
-    target = torch.from_numpy(np.stack((wave1_list / 65536, wave2_list / 65536), axis=1)).float()
+    target = torch.from_numpy(np.stack((wave1_list / (65536 * 2), wave2_list / (65536 * 2)), axis=1)).float()
 
     # test_input = torch.from_numpy(np.expand_dims(mixed / 65536, axis=0)).float()
     # test_target = torch.from_numpy(np.expand_dims(np.stack((wave1 / 65536, wave2 / 65536)), axis=0)).float()
@@ -87,23 +70,27 @@ def main():
     test_target = target
 
     # build the model
+    # seq = Sequence()
     seq = Sequence()
     seq.float()
     criterion = nn.MSELoss()
     # use LBFGS as optimizer since we can load the whole data to train
-    optimizer = optim.LBFGS(seq.parameters(), lr=0.8, max_iter=args.cycles)
+    # optimizer = optim.LBFGS(seq.parameters(), lr=0.8, max_iter=args.cycles)
+    optimizer = optim.Adam(seq.parameters(), lr=0.001)
     #begin to train
     for i in range(args.steps):
         print('==== STEP{} ===='.format(i))
         start_time = time.time()
-        def closure():
+        # def closure():
+        for j in range(args.cycles):
             optimizer.zero_grad()
             out = seq(input)
             loss = criterion(out, target)
             print('loss:', loss.item())
             loss.backward()
-            return loss
-        optimizer.step(closure)
+            # return loss
+            optimizer.step()
+        # optimizer.step(closure)
         end_time = time.time()
         print("[Step Info]")
         print("Time: {}".format(end_time - start_time))
@@ -116,6 +103,8 @@ def main():
             y = (pred.detach().numpy() * 65536).astype('int16')
 
             for i in range(input.size(0)):
+                save_wav(wave1_list[i].astype(np.int16), './out/sample{}_wave0.wav'.format(i))
+                save_wav(wave2_list[i].astype(np.int16), './out/sample{}_wave1.wav'.format(i))
                 save_wav(mixed_list[i].astype(np.int16), './out/sample{}_mixed.wav'.format(i))
                 save_wav(y[i][0], './out/sample{}_0.wav'.format(i))
                 save_wav(y[i][1], './out/sample{}_1.wav'.format(i))
