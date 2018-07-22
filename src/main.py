@@ -38,19 +38,13 @@ def list_audio(recipe_path):
 
     return list
 
+def save_checkpoint(state, is_best, filename='out/model/checkpoint.pth.tar'):
+    torch.save(state, filename)
+    if is_best:
+        torch.save(state, 'out/model/best.pth.tar')
 
-def main():
-
-    args = get_arguments()
-
-    list = list_audio(args.recipe)
-    # print(list)
-
-    # set random seed to 0
-    np.random.seed(0)
-    torch.manual_seed(0)
-    # load data and make training set
-
+def recipe2data(recipe_path):
+    list = list_audio(recipe_path)
     # data preparation
     mixed_list = np.empty((0, 8000), int)
     wave1_list = np.empty((0, 8000), int)
@@ -69,8 +63,55 @@ def main():
     test_input = input
     test_target = target
 
+    return mixed_list, wave1_list, wave2_list, input, target, test_input, test_target
+
+def eval():
+    args = get_arguments()
+
+    # set random seed to 0
+    np.random.seed(0)
+    torch.manual_seed(0)
+
+    mixed_list, wave1_list, wave2_list, input, target, test_input, test_target = recipe2data(args.recipe)
+
     # build the model
     # seq = Sequence()
+    seq = Sequence()
+    seq.float()
+    criterion = nn.MSELoss()
+    # use LBFGS as optimizer since we can load the whole data to train
+    # optimizer = optim.LBFGS(seq.parameters(), lr=0.8, max_iter=args.cycles)
+    optimizer = optim.Adam(seq.parameters(), lr=0.001)
+
+    checkpoint = torch.load('out/model/checkpoint.pth.tar')
+    seq.load_state_dict(checkpoint['state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer'])
+    with torch.no_grad():
+        pred = seq(test_input)
+        loss = criterion(pred, test_target)
+        print('test loss:', loss.item())
+        y = (pred.detach().numpy() * 65536).astype('int16')
+
+        for i in range(input.size(0)):
+            save_wav(wave1_list[i].astype(np.int16), './out/sample{}_wave0.wav'.format(i))
+            save_wav(wave2_list[i].astype(np.int16), './out/sample{}_wave1.wav'.format(i))
+            save_wav(mixed_list[i].astype(np.int16), './out/sample{}_mixed.wav'.format(i))
+            save_wav(y[i][0], './out/sample{}_0.wav'.format(i))
+            save_wav(y[i][1], './out/sample{}_1.wav'.format(i))
+        print()
+
+
+def main():
+
+    args = get_arguments()
+
+    # set random seed to 0
+    np.random.seed(0)
+    torch.manual_seed(0)
+
+    mixed_list, wave1_list, wave2_list, input, target, test_input, test_target = recipe2data(args.recipe)
+
+    # build the model
     seq = Sequence()
     seq.float()
     criterion = nn.MSELoss()
@@ -94,6 +135,10 @@ def main():
         end_time = time.time()
         print("[Step Info]")
         print("Time: {}".format(end_time - start_time))
+        save_checkpoint({
+            'state_dict': seq.state_dict(),
+            'optimizer' : optimizer.state_dict(),
+        }, is_best=False)
 
         # begin to predict, no need to track gradient here
         with torch.no_grad():
@@ -111,5 +156,7 @@ def main():
             print()
 
 
+
 if __name__ == '__main__':
-    main()
+    # main()
+    eval()
