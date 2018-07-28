@@ -60,7 +60,8 @@ def train(args):
     mixed_list, wave1_list, wave2_list, input, target = recipe2data(args.recipe)
 
     # build the model
-    seq = Sequence()
+    # seq = Sequence()
+    seq = Sequence2()
     seq.float()
     criterion = nn.MSELoss()
     # use LBFGS as optimizer since we can load the whole data to train
@@ -104,14 +105,14 @@ def eval(args):
     mixed_list, wave1_list, wave2_list, input, target = recipe2data(args.recipe)
 
     # build the model
-    seq = Sequence()
+    seq = Sequence2()
     seq.float()
     criterion = nn.MSELoss()
     # use LBFGS as optimizer since we can load the whole data to train
     # optimizer = optim.LBFGS(seq.parameters(), lr=0.8, max_iter=args.cycles)
     optimizer = optim.Adam(seq.parameters(), lr=0.001)
 
-    checkpoint = torch.load('out/model/best.pth.tar')
+    checkpoint = torch.load('out/model/checkpoint.pth.tar')
     seq.load_state_dict(checkpoint['state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer'])
     with torch.no_grad():
