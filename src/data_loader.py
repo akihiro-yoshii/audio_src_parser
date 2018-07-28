@@ -8,17 +8,24 @@ from audio_util import get_mix_audio
 
 class AudioDataset(Dataset):
     def __init__(self, recipe_path):
-        with open(recipe_path, 'r') as f:
-            strings = f.readlines()
 
         list = []
-        for string in strings:
-            if string.find('#') != 0:
-                columns = string.rstrip().split(' ')
-                path1 = columns[0] + columns[1]
-                path2 = columns[0] + columns[2]
+
+        with open("./recipe/others_test.txt", 'r') as f:
+            others_strings = f.readlines()
+
+        with open("./recipe/flute_test.txt", 'r') as f:
+            flute_strings = f.readlines()
+
+        for other in others_strings:
+            for flute in flute_strings:
+                path1 = "./data/nsynth-train/audio/" + other.rstrip()
+                path2 = "./data/nsynth-train/audio/" + flute.rstrip()
 
                 list.append([path1, path2])
+
+        for pair in list:
+            print(pair)
 
         self.audio_pairs = list
 

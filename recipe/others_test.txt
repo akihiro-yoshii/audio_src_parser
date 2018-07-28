@@ -1,0 +1,6 @@
+bass_electronic_012-056-100.wav
+bass_electronic_019-030-100.wav
+guitar_acoustic_022-055-100.wav
+bass_electronic_016-037-100.wav
+guitar_acoustic_008-040-100.wav
+guitar_acoustic_017-085-100.wav
